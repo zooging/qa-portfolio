@@ -1,0 +1,55 @@
+name: E2E tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * 1'
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: e2e-playwright/package-lock.json
+
+      - name: Install dependencies
+        working-directory: e2e-playwright
+        run: npm ci
+
+      - name: Install Chromium
+        working-directory: e2e-playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: e2e-playwright
+        run: npx playwright test
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e-playwright/playwright-report
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-allure-results
+          path: e2e-playwright/allure-results
+
+      - name: Upload failures (screenshots/video/trace)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failures
+          path: e2e-playwright/test-results

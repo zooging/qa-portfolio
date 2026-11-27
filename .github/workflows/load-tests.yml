@@ -1,0 +1,25 @@
+name: Load test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * 1'
+
+jobs:
+  k6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run k6 smoke scenario
+        run: |
+          docker run --rm \
+            -v "$PWD/load-tests:/scripts" \
+            grafana/k6:latest run --summary-export=/scripts/summary.json /scripts/smoke.js
+
+      - name: Upload summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-summary
+          path: load-tests/summary.json
