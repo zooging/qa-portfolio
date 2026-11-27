@@ -1,7 +1,0 @@
-pytest==9.2.0
-requests==2.34.2
-jsonschema==4.26.0
-allure-pytest==2.16.2
-pytest-html==4.2.0
-python-dotenv==1.2.4
-Faker==40.63.0
